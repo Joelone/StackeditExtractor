@@ -44,7 +44,7 @@ func main() {
 func serializeTree() {
 	// TODO i'm sure it can be done in 1 loop no need for this one
 	for _, file := range filesMap {
-		finalName := addParentToTheFileName(file)
+		finalName := addParentToTheFileName(file) + ".md"
 		// if it's a file, not a folder
 		if len(file.fileContent) > 0 {
 			filenameAndPathFinal := filepath.Join(PATH_OUTPUT_FOLDER, finalName)
@@ -65,19 +65,24 @@ func buildTreeStruct(marshaledData map[string]interface{}) {
 		if block["type"] == "content" {
 			splitRes := strings.Split(key, "/")[0]
 			foundFile, _ := filesMap[splitRes]
-			text := block["text"].(string)
-			foundFile.fileContent = text
-			filesMap[splitRes] = foundFile
+			textId := block["text"]
+			if textId != nil && len(textId.(string)) > 0 {
+				text := block["text"].(string)
+				foundFile.fileContent = text
+				filesMap[splitRes] = foundFile
+			}
 		}
 		if block["type"] == "file" {
 			var descNode = filesMap[id]
 			folderName := block["name"]
-			descNode.fileName = folderName.(string)
-			parentId := block["parentId"]
-			if parentId != nil && len(parentId.(string)) > 0 {
-				descNode.parentId = parentId.(string)
+			if folderName != nil && len(folderName.(string)) > 0 {
+				descNode.fileName = folderName.(string)
+				parentId := block["parentId"]
+				if parentId != nil && len(parentId.(string)) > 0 {
+					descNode.parentId = parentId.(string)
+				}
+				filesMap[id] = descNode
 			}
-			filesMap[id] = descNode
 		}
 		if block["type"] == "folder" {
 			var descNode = filesMap[id]
